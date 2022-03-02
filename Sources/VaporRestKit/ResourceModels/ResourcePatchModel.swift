@@ -12,18 +12,11 @@ public protocol ResourcePatchModel: ResourceMutationModel {
     func patch(_: Model) throws -> Model
 
     func patch(_ model: Model, req: Request, database: Database) -> EventLoopFuture<Model>
-    func patch(_ model: Model, req: Request, database: Database) async throws -> Model
 }
 
 public extension ResourcePatchModel {
     func patch(_ model: Model, req: Request, database: Database) -> EventLoopFuture<Model> {
         return req.eventLoop.tryFuture { try patch(model) }
-    }
-}
-
-public extension ResourcePatchModel {
-    func patch(_ model: Model, req: Request, database: Database) async throws -> Model {
-        try await patch(model, req: req, database: database).get()
     }
 }
 
@@ -34,9 +27,5 @@ public extension ResourcePatchModel {
 
     func mutate(_ model: Model, req: Request, database: Database) -> EventLoopFuture<Model> {
         patch(model, req: req, database: database)
-    }
-    
-    func mutate(_ model: Model, req: Request, database: Database) async throws -> Model {
-        try await patch(model, req: req, database: database)
     }
 }

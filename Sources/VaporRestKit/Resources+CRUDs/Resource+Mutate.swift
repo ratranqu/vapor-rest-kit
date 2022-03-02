@@ -85,7 +85,7 @@ extension RelatedResourceController {
         queryModifier: QueryModifier<Model>,
         relationKeyPath: ChildrenKeyPath<RelatedModel, Model>) async throws -> Output
     where
-        Input: ResourceMutationModel,
+        Input: AsyncResourceMutationModel,
         Model == Output.Model,
         Model == Input.Model {
             
@@ -153,7 +153,7 @@ extension RelatedResourceController {
         queryModifier: QueryModifier<Model>,
         relationKeyPath: ChildrenKeyPath<Model, RelatedModel>) async throws -> Output
     where
-        Input: ResourceMutationModel,
+        Input: AsyncResourceMutationModel,
         Model == Output.Model,
         Model == Input.Model {
 
@@ -219,7 +219,7 @@ extension RelatedResourceController {
         queryModifier: QueryModifier<Model>,
         relationKeyPath: SiblingKeyPath<RelatedModel, Model, Through>) async throws -> Output
     where
-        Input: ResourceMutationModel,
+        Input: AsyncResourceMutationModel,
         Model == Output.Model,
         Model == Input.Model {
         
