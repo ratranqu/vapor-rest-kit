@@ -9,27 +9,17 @@ import Vapor
 import Fluent
 
 public extension AsyncResourceController {
-    func getPage<Model>(
-        req: Request,
-        queryModifier: QueryModifier<Model> = .empty) throws -> EventLoopFuture<Page<Output>>
-    where
-        Output.Model == Model {
-        
-        try Model
-            .query(on: req.db)
-            .with(queryModifier, for: req)
-            .paginate(for: req)
-            .flatMapThrowing { collection in try collection.map { try Output($0, req: req) } }
-    }
-    
     @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func getPage<Model>(
         req: Request,
         queryModifier: QueryModifier<Model> = .empty) async throws -> Page<Output>
     where
         Output.Model == Model {
-        
-            try await getPage(req: req, queryModifier: queryModifier).get()
+        let page = try await Model
+                .query(on: req.db)
+                .with(queryModifier, for: req)
+                .paginate(for: req).get()
+            return try await page.asyncMap( {try await Output($0, req: req) })
     }
 }
 
@@ -48,7 +38,7 @@ public extension AsyncResourceController {
             let query = related.queryRelated(keyPath: relationKeyPath, on: req.db)
             let result = try query.with(queryModifier, for: req)
             let collection = try await result.paginate(for: req)
-            return try collection.map { try Output($0, req: req) }
+            return try await collection.asyncMap { try await Output($0, req: req) }
     }
     
     @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
@@ -64,7 +54,7 @@ public extension AsyncResourceController {
             let query = try related.queryRelated(keyPath: relationKeyPath, on: req.db)
             let result = try query.with(queryModifier, for: req)
             let collection = try await result.paginate(for: req)
-            return try collection.map { try Output($0, req: req) }
+            return try await collection.asyncMap { try await Output($0, req: req) }
         }
     
 
@@ -81,7 +71,7 @@ public extension AsyncResourceController {
             let query = related.queryRelated(keyPath: relationKeyPath, on: req.db)
             let result = try query.with(queryModifier, for: req)
             let collection = try await result.paginate(for: req)
-            return try collection.map { try Output($0, req: req)
+            return try await collection.asyncMap { try await Output($0, req: req)
             }
         }
 }
