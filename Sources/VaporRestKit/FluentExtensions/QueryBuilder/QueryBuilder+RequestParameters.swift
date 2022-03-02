@@ -26,5 +26,9 @@ extension QueryBuilder where Model.IDValue: LosslessStringConvertible {
                    .first()
                    .unwrap(or: Abort(.notFound))
     }
+    
+    func find(by idKey: String, from req: Request) async throws -> Model {
+        try await self.find(by: idKey, from: req).get()
+    }
 }
 

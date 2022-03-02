@@ -14,8 +14,8 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.48.2"),
-        .package(url: "https://github.com/vapor/fluent.git", from: "4.3.1"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.55.1"),
+        .package(url: "https://github.com/vapor/fluent.git", from: "4.4.0"),
         .package(url: "https://github.com/vapor/fluent-sqlite-driver.git", from: "4.1.0")
     ],
     targets: [

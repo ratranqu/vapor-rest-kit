@@ -91,6 +91,29 @@ extension SiblingModel: InitMigratableSchema {
             .field(Fields.toId.key, toIdType, .required, .references(To.schema, .id))
             .create()
     }
+    
+    public static func prepare(on schemaBuilder: SchemaBuilder) async throws {
+        guard let fromIdType = DatabaseSchema.DataType(type: From.IDValue.self) else {
+            try await schemaBuilder.create().get()
+            throw FluentError.invalidField(name: "\(From.schema).id",
+                                    valueType: From.IDValue.self,
+                                    error: SiblingModelError.idTypeUnsupported)
+        }
+
+
+        guard let toIdType = DatabaseSchema.DataType(type: From.IDValue.self) else {
+            try await schemaBuilder.create().get()
+            throw FluentError.invalidField(name: "\(To.schema).id",
+                                    valueType: To.IDValue.self,
+                                    error: SiblingModelError.idTypeUnsupported)
+        }
+
+        try await schemaBuilder
+            .id()
+            .field(Fields.fromId.key, fromIdType, .required, .references(From.schema, .id))
+            .field(Fields.toId.key, toIdType, .required, .references(To.schema, .id))
+            .create().get()
+    }
 }
 
 

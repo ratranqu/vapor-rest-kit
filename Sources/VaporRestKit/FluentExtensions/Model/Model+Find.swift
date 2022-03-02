@@ -24,6 +24,22 @@ extension Model where IDValue: LosslessStringConvertible {
             .with(queryModifier, for: req)
             .find(by: idKey, from: req)
     }
+    
+    static func findByIdKey(_ req: Request,
+                            database: Database) async throws -> Self {
+        try await findByIdKey(
+            req,
+            database: database).get()
+    }
+
+    static func findByIdKey(_ req: Request,
+                            database: Database,
+                            queryModifier: QueryModifier<Self>) async throws -> Self {
+        try await findByIdKey(
+            req,
+            database: database,
+            queryModifier: queryModifier).get()
+    }
 }
 
 extension Model where Self: Authenticatable {
@@ -32,6 +48,11 @@ extension Model where Self: Authenticatable {
 
         let related = try req.auth.require(Self.self)
         return req.eventLoop.makeSucceededFuture(related)
+    }
+    
+    static func requireAuth(_ req: Request,
+                            database: Database) throws -> Self  {
+        try req.auth.require(Self.self)
     }
 }
 
@@ -83,6 +104,41 @@ extension Model where IDValue: LosslessStringConvertible {
                     .and(value: related)
             }
             .flatMap { $0 }
+    }
+    
+    static func findByIdKeys<RelatedModel>(
+        _ req: Request,
+        database: Database,
+        childrenKeyPath: ChildrenKeyPath<RelatedModel, Self>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        RelatedModel: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible {
+
+        try await findByIdKeys(
+            req,
+            database: database,
+            childrenKeyPath: childrenKeyPath,
+            queryModifier: queryModifier).get()
+    }
+
+    static func findByIdKeyAndAuthRelated<RelatedModel>(
+        _ req: Request,
+        database: Database,
+        childrenKeyPath: ChildrenKeyPath<RelatedModel, Self>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        RelatedModel: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible,
+        RelatedModel: Authenticatable {
+
+            try await findByIdKeyAndAuthRelated(
+                req,
+                database: database,
+                childrenKeyPath: childrenKeyPath,
+                queryModifier: queryModifier).get()
     }
 }
 
@@ -137,6 +193,41 @@ extension Model where IDValue: LosslessStringConvertible {
             }
             .flatMap { $0 }
     }
+    
+    static func findByIdKeys<RelatedModel>(
+        _ req: Request,
+        database: Database,
+        childrenKeyPath: ChildrenKeyPath<Self, RelatedModel>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        RelatedModel: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible {
+
+        try await findByIdKeys(
+            req,
+            database: database,
+            childrenKeyPath: childrenKeyPath,
+            queryModifier: queryModifier).get()
+    }
+
+    static func findByIdKeyAndAuthRelated<RelatedModel>(
+        _ req: Request,
+        database: Database,
+        childrenKeyPath: ChildrenKeyPath<Self, RelatedModel>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        RelatedModel: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible,
+        RelatedModel: Authenticatable {
+
+            try await findByIdKeyAndAuthRelated(
+                req,
+                database: database,
+                childrenKeyPath: childrenKeyPath,
+                queryModifier: queryModifier).get()
+    }
 }
 
 
@@ -186,5 +277,40 @@ extension Model where IDValue: LosslessStringConvertible {
                     .and(value: related)
             }
             .flatMap { $0 }
+    }
+    
+    static func findByIdKeys<RelatedModel, Through>(
+        _ req: Request,
+        database: Database,
+        siblingKeyPath: SiblingKeyPath<RelatedModel, Self, Through>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        Through: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible {
+
+        try await findByIdKeys(
+            req,
+            database: database,
+            siblingKeyPath: siblingKeyPath,
+            queryModifier: queryModifier).get()
+    }
+
+    static func findByIdKeyAndAuthRelated<RelatedModel, Through>(
+        _ req: Request,
+        database: Database,
+        siblingKeyPath: SiblingKeyPath<RelatedModel, Self, Through>,
+        queryModifier: QueryModifier<Self>) async throws -> (Self, RelatedModel)
+
+    where
+        Through: Fluent.Model,
+        RelatedModel.IDValue: LosslessStringConvertible,
+        RelatedModel: Authenticatable {
+
+            try await findByIdKeyAndAuthRelated(
+                req,
+                database: database,
+                siblingKeyPath: siblingKeyPath,
+                queryModifier: queryModifier).get()
     }
 }

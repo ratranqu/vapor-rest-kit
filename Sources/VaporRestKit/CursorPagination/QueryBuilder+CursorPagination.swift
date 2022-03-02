@@ -25,6 +25,19 @@ extension QueryBuilder {
     }
 }
 
+//MARK:- QueryBuilder async Pagination Extension
+
+extension QueryBuilder {
+
+    func paginateWithCursor(for request: Request,
+                            config: CursorPaginationConfig = .defaultConfig) async throws -> CursorPage<Model> {
+        let page = try request.query.decode(CursorPageRequest.self)
+        return try await self.paginateWithCursor(page.cursorType(with: config),
+                                           decoder: config.coder,
+                                                 encoder: config.coder).get()
+    }
+}
+
 //MARK:- QueryBuilder private extensions
 
 extension QueryBuilder  {

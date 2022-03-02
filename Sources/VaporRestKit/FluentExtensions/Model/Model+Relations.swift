@@ -86,10 +86,31 @@ extension Model {
     }
 
     @discardableResult
+    func attached<To, Through>(to child: To,
+                               with childrenKeyPath: SiblingKeyPath<Self, To, Through>,
+                               on database: Database,
+                               method: SiblingsProperty<Self, To, Through>.AttachMethod = .ifNotExists,
+                               edit: @escaping (Through) -> () = { _ in }) async throws -> Self {
+
+        try await attached(to: child,
+                           with: childrenKeyPath,
+                           on: database,
+                           method: method,
+                           edit: edit).get()
+    }
+
+    @discardableResult
     func detached<To, Through>(from child: To,
                                with childrenKeyPath: SiblingKeyPath<Self, To, Through>, on database: Database) -> EventLoopFuture<Self> {
         return self[keyPath: childrenKeyPath].detach(child, on: database)
             .transform(to: self)
+    }
+
+    @discardableResult
+    func detached<To, Through>(from child: To,
+                               with childrenKeyPath: SiblingKeyPath<Self, To, Through>, on database: Database) async throws -> Self {
+        
+        try await detached(from: child, with: childrenKeyPath, on: database).get()
     }
 
     @discardableResult
@@ -102,6 +123,21 @@ extension Model {
         return parent[keyPath: siblingKeyPath].attach(self, method: method, on: database, edit)
             .transform(to: self)
     }
+    
+    @discardableResult
+    func attached<From, Through>(to parent: From,
+                                 with siblingKeyPath: SiblingKeyPath<From, Self, Through>,
+                                 on database: Database,
+                                 method: SiblingsProperty<From, Self, Through>.AttachMethod = .ifNotExists,
+                                 edit: @escaping (Through) -> () = { _ in }) async throws -> Self {
+
+        try await attached(to: parent,
+                           with: siblingKeyPath,
+                           on: database,
+                           method: method,
+                           edit: edit).get()
+    }
+
     @discardableResult
     func detached<From, Through>(from parent: From,
                                  with siblingKeyPath: SiblingKeyPath<From, Self, Through>,
@@ -111,6 +147,14 @@ extension Model {
             .transform(to: self)
     }
 
+    @discardableResult
+    func detached<From, Through>(from parent: From,
+                                 with siblingKeyPath: SiblingKeyPath<From, Self, Through>,
+                                 on database: Database) async throws -> Self {
+
+        try await detached(from: parent, with: siblingKeyPath, on:database).get()
+    }
+    
     @discardableResult
     func getParentKey<From>(with childrenKeyPath: ChildrenKeyPath<From, Self>) -> ChildrenProperty<From, Self>.Key {
 
