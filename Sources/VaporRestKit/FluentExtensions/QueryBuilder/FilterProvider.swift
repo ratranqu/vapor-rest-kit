@@ -140,7 +140,7 @@ enum FilterOperations: String, Codable {
     case prefix = "prefix"
     case suffix = "suffix"
     case like = "like"
-    case ilike = "~*"
+    case tildeStar = "~*"
 
     var databaseFilterMethod: DatabaseQuery.Filter.Method {
         switch self {
@@ -162,7 +162,7 @@ enum FilterOperations: String, Codable {
             return .contains(inverse: false, .suffix)
         case .like:
             return .contains(inverse: false, .anywhere)
-        case .ilike:
+        case .tildeStar:
             return .custom("~*")
         }
     }
