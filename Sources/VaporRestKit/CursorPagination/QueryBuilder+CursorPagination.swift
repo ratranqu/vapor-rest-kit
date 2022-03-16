@@ -29,12 +29,14 @@ extension QueryBuilder {
 
 extension QueryBuilder {
 
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func paginateWithCursor(for request: Request,
                             config: CursorPaginationConfig = .defaultConfig) async throws -> CursorPage<Model> {
         let page = try request.query.decode(CursorPageRequest.self)
+
         return try await self.paginateWithCursor(page.cursorType(with: config),
                                            decoder: config.coder,
-                                                 encoder: config.coder).get()
+                                                 encoder: config.coder)
     }
 }
 
@@ -70,9 +72,9 @@ extension QueryBuilder  {
                                         encoder: PaginationCursorEncoder) throws -> EventLoopFuture<CursorPage<Model>> {
         let requestCursorValues = try decoder.decode(cursor: cursor)
         let filterBuilder = try CursorFilterBuilder(sorts: query.sorts)
-        let queryBulder = try filterBuilder.filter(copy(), with: requestCursorValues)
+        let queryBuilder = try filterBuilder.filter(copy(), with: requestCursorValues)
 
-        let items = queryBulder.limit(limit).all()
+        let items = queryBuilder.limit(limit).all()
 
         return items.flatMapThrowing { models in
             let next = try models.last.map { try encoder.encode($0, cursorFilters: filterBuilder.filterDescriptors) }
@@ -81,6 +83,49 @@ extension QueryBuilder  {
                               metadata: metadata)
         }
     }
+    
+    // MARK: Async versions
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+    fileprivate func paginateWithCursor(_ cursorType: CursorType,
+                                        decoder: PaginationCursorDecoder,
+                                        encoder: PaginationCursorEncoder) async throws -> CursorPage<Model> {
+        switch cursorType {
+        case .initial(limit: let limit):
+            return try await paginateWithInitCursor(limit, encoder: encoder)
+        case .next(cursor: let cursor, limit: let limit):
+            return try await paginateWithCursor(cursor, limit: limit, decoder: decoder, encoder: encoder)
+        }
+    }
+
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+    fileprivate func paginateWithInitCursor(_ limit: Int, encoder: PaginationCursorEncoder) async throws -> CursorPage<Model> {
+        let filterBuilder = try CursorFilterBuilder(sorts: query.sorts)
+        let models = try await self.copy().limit(limit).all()
+
+        let next = try models.last.map { try encoder.encode($0, cursorFilters: filterBuilder.filterDescriptors) }
+        let metadata = CursorPageMetadata(nextCursor: next)
+        return CursorPage(items: models,
+                          metadata: metadata)
+
+    }
+
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
+    fileprivate func paginateWithCursor(_ cursor: String,
+                                        limit: Int,
+                                        decoder: PaginationCursorDecoder,
+                                        encoder: PaginationCursorEncoder) async throws -> CursorPage<Model> {
+        let requestCursorValues = try decoder.decode(cursor: cursor)
+        let filterBuilder = try CursorFilterBuilder(sorts: query.sorts)
+        let queryBuilder = try filterBuilder.filter(copy(), with: requestCursorValues)
+
+        let models = try await queryBuilder.limit(limit).all()
+
+        let next = try models.last.map { try encoder.encode($0, cursorFilters: filterBuilder.filterDescriptors) }
+        let metadata = CursorPageMetadata(nextCursor: next)
+        return CursorPage(items: models,
+                          metadata: metadata)
+    }
+
 }
 
 

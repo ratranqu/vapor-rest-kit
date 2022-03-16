@@ -91,7 +91,9 @@ extension SiblingModel: InitMigratableSchema {
             .field(Fields.toId.key, toIdType, .required, .references(To.schema, .id))
             .create()
     }
-    
+}
+
+extension SiblingModel: AsyncInitMigratableSchema {
     public static func prepare(on schemaBuilder: SchemaBuilder) async throws {
         guard let fromIdType = DatabaseSchema.DataType(type: From.IDValue.self) else {
             try await schemaBuilder.create().get()
@@ -115,7 +117,6 @@ extension SiblingModel: InitMigratableSchema {
             .create().get()
     }
 }
-
 
 fileprivate extension DatabaseSchema.DataType {
     init?<T>(type: T.Type) {
