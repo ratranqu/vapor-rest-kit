@@ -2,62 +2,64 @@
 //  File.swift
 //  
 //
-//  Created by Sergey Kazakov on 07.08.2021.
+//  Created by Alex Tran-Qui on 16/03/2022.
 //
-
 
 import Vapor
 import Fluent
 
-public extension ResourceController {
+public extension AsyncResourceController {
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func update<Input, Model>(
         req: Request,
         using: Input.Type,
-        queryModifier: QueryModifier<Model> = .empty) throws -> EventLoopFuture<Output>
+        queryModifier: QueryModifier<Model> = .empty) async throws -> Output
     where
-        Input: ResourceUpdateModel,
+        Input: AsyncResourceUpdateModel,
         Output.Model == Model,
         Input.Model == Output.Model {
         
-        try mutate(req: req, using: using, queryModifier: queryModifier)
+        try await mutate(req: req, using: using, queryModifier: queryModifier)
     }
 }
 
-public extension RelatedResourceController {
+public extension AsyncRelatedResourceController {
     
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func update<Input, Model, RelatedModel>(
-        resolver: ChildResolver<Model, RelatedModel> = .byIdKeys,
+        resolver: AsyncChildResolver<Model, RelatedModel> = .byIdKeys,
         req: Request,
         using: Input.Type,
-        willSave middleware: ControllerMiddleware<Model, RelatedModel> = .empty,
+        willSave middleware: AsyncControllerMiddleware<Model, RelatedModel> = .empty,
         queryModifier: QueryModifier<Model> = .empty,
-        relationKeyPath: ChildrenKeyPath<RelatedModel, Model>) throws -> EventLoopFuture<Output>
+        relationKeyPath: ChildrenKeyPath<RelatedModel, Model>) async throws -> Output
     where
-        Input: ResourceUpdateModel,
+        Input: AsyncResourceUpdateModel,
         Model == Output.Model,
         Input.Model == Output.Model  {
         
-        try mutate(resolver: resolver,
+        try await mutate(resolver: resolver,
                    req: req,
                    using: using,
                    willSave: middleware,
                    queryModifier: queryModifier,
                    relationKeyPath: relationKeyPath)
     }
-    
+
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func update<Input, Model, RelatedModel>(
-        resolver: ParentResolver<Model, RelatedModel> = .byIdKeys,
+        resolver: AsyncParentResolver<Model, RelatedModel> = .byIdKeys,
         req: Request,
         using: Input.Type,
-        willSave middleware: ControllerMiddleware<Model, RelatedModel> = .empty,
+        willSave middleware: AsyncControllerMiddleware<Model, RelatedModel> = .empty,
         queryModifier: QueryModifier<Model> = .empty,
-        relationKeyPath: ChildrenKeyPath<Model, RelatedModel>) throws -> EventLoopFuture<Output>
+        relationKeyPath: ChildrenKeyPath<Model, RelatedModel>) async throws -> Output
     where
-        Input: ResourceUpdateModel,
+        Input: AsyncResourceUpdateModel,
         Model == Output.Model,
         Input.Model == Output.Model {
         
-        try mutate(resolver: resolver,
+            try await mutate(resolver: resolver,
                    req: req,
                    using: using,
                    willSave: middleware,
@@ -65,19 +67,20 @@ public extension RelatedResourceController {
                    relationKeyPath: relationKeyPath)
     }
     
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func update<Input, Model, RelatedModel, Through>(
-        resolver: SiblingsResolver<Model, RelatedModel, Through> = .byIdKeys,
+        resolver: AsyncSiblingsResolver<Model, RelatedModel, Through> = .byIdKeys,
         req: Request,
         using: Input.Type,
-        willSave middleware: ControllerMiddleware<Model, RelatedModel> = .empty,
+        willSave middleware: AsyncControllerMiddleware<Model, RelatedModel> = .empty,
         queryModifier: QueryModifier<Model> = .empty,
-        relationKeyPath: SiblingKeyPath<RelatedModel, Model, Through>) throws -> EventLoopFuture<Output>
+        relationKeyPath: SiblingKeyPath<RelatedModel, Model, Through>) async throws -> Output
     where
-        Input: ResourceUpdateModel,
+        Input: AsyncResourceUpdateModel,
         Model == Output.Model,
         Input.Model == Output.Model {
         
-        try mutate(resolver: resolver,
+            try await mutate(resolver: resolver,
                    req: req,
                    using: using,
                    willSave: middleware,

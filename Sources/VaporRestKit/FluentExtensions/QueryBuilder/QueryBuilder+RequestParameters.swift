@@ -27,8 +27,12 @@ extension QueryBuilder where Model.IDValue: LosslessStringConvertible {
                    .unwrap(or: Abort(.notFound))
     }
     
+    @available(macOS 12, iOS 15, watchOS 8, tvOS 15, *)
     func find(by idKey: String, from req: Request) async throws -> Model {
-        try await self.find(by: idKey, from: req).get()
+        guard let id = try? getIdParameter(idKey, from: req), let model = try await self.filter(\._$id == id).first() else {
+            throw Abort(.notFound)
+        }
+        return model
     }
 }
 

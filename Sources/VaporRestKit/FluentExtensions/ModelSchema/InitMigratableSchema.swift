@@ -12,14 +12,6 @@ import Fluent
 
 public protocol InitMigratableSchema: Model {
     static func prepare(on schemaBuilder: SchemaBuilder) -> EventLoopFuture<Void>
-
-    static func prepare(on schemaBuilder: SchemaBuilder) async throws
-}
-
-public extension InitMigratableSchema {
-    static func prepare(on schemaBuilder: SchemaBuilder) async throws {
-        try await prepare(on: schemaBuilder).get()
-    }
 }
 
 public extension InitMigratableSchema {
